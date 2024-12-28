@@ -1,10 +1,16 @@
 const express = require('express')
 const morgan = require ('morgan')
+const userRouter = require('./routes/user.route');
 
 require('dotenv').config();
 require('./libs/dbConnect');
 
 const app = express();
+/*User router function */
+app.get('/', (req, res) => {
+    res.render('index', { message: 'Hello From Node.js' });
+    });
+app.use('/users', userRouter);
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
