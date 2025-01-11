@@ -1,9 +1,14 @@
 const express = require('express')
 const morgan = require ('morgan')
 const userRouter = require('./routes/user.route');
+const session = require('express-session');
+const dashboardRouter = require('./routes/dashboard.route');
+const flash = require('connect-flash');
+const { verifyUser } = require('./libs/middleware');
 
 require('dotenv').config();
 require('./libs/dbConnect');
+
 
 const app = express();
 /*User router function */
@@ -12,29 +17,29 @@ app.get('/', (req, res) => {
     });
 app.use('/users', userRouter);
 
+
 app.set('views', './views');
 app.set('view engine', 'ejs');
 
 app.use(morgan('dev'));
+app.use(express.static('./public'));
+app.use('/dashboard', verifyUser, dashboardRouter);
+app.use(express.urlencoded({ extended: false }));
 
-app.get('/',(req,res) => {
-    res.render('index', {message:'Hello from chris'});
-});
+app.use(
+    session({
+    secret: process.env.AUTH_SECRET,
+    saveUninitialized: true,
+    resave: false,
+    })
+    )
 
-app.get("/contact",(req,res) =>{
-res.render('index',{message:'The contact page'})
-});
-
-app.get('/about',(req, res)=>{
-    res.render('index', { message: 'The About Page' });
-});
-
-app.get("/valhalla",(req, res) =>{
-    res.render('index', { message: 'Welcome to the Valhalla hall of the hero , under the guidance of the valkyries "master valhalla , master thyself"' });
-});
+ app.use(flash());
 
 app.get('*',(req, res)=>{
-    res.status(404).render('index', { message: 'Not Found' });
+    res.status(404).render('index', {
+        title:'Not found',
+         message: 'Not Found' });
 });
 
 const PORT = 3000;
